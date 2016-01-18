@@ -1,0 +1,22 @@
+{
+  "name": "angular-training-task2",
+  "version": "1.0.0",
+  "description": "Task2 for Training Angular (EPAM)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShuhratBek/angular-training-task2.git"
+  },
+  "author": "ShuhratBek",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ShuhratBek/angular-training-task2/issues"
+  },
+  "homepage": "https://github.com/ShuhratBek/angular-training-task2#readme",
+  "dependencies": {
+    "lodash": "^4.0.0"
+  }
+}
