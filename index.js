@@ -17,11 +17,7 @@ function Scope() {
 Scope.prototype.$apply = function(expr) {
   try {
     this.$beginPhase("$apply");
-    try {
-      return this.$eval(expr);
-    } finally {
-      this.$clearPhase();
-    }
+    return this.$eval(expr);
   } finally {
     this.$clearPhase();
     this.$digest();
