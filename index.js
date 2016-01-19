@@ -17,7 +17,11 @@ function Scope() {
 Scope.prototype.$apply = function(expr) {
   try {
     this.$beginPhase("$apply");
-    return this.$eval(expr);
+    try {
+      return this.$eval(expr);
+    } finally {
+      this.$clearPhase();
+    }
   } finally {
     this.$clearPhase();
     this.$digest();
@@ -160,3 +164,119 @@ Scope.prototype.$$digestOnce = function() {
 Scope.prototype.$$postDigest = function(fn) {
   this.$$postDigestQueue.push(fn);
 };
+
+var sampleFunctions = {
+  scope: function() {
+    var scope = new Scope();
+    scope.firstName = 'Shukhratbek';
+    scope.lastName = 'Mamadaliev';
+    console.log(scope);
+  },
+  watch: function() {
+    var scope = new Scope();
+    scope.$watch(function() {console.log('watchFn');}, function() {console.log('listener');});
+
+    scope.$digest();
+    scope.$digest();
+    scope.$digest();
+  },
+  apply: function() {
+    var scope = new Scope();
+    scope.counter = 0;
+
+    scope.$watch(
+      function(scope) {
+        return scope.aValue;
+      },
+      function(newValue, oldValue, scope) {
+        scope.counter++;
+      }
+    );
+
+    scope.$apply(function(scope) {
+      scope.aValue = 'Hello from "outside"';
+    });
+    console.assert(scope.counter === 1);
+  },
+  eval: function(){
+    var scope = new Scope();
+    scope.number = 1;
+
+    scope.$eval(function(theScope) {
+      console.log('Number during $eval:', theScope.number);
+    });
+  },
+  evalAsync: function(){
+    var scope = new Scope();
+    scope.asyncEvaled = false;
+
+    scope.$watch(
+      function(scope) {
+        return scope.aValue;
+      },
+      function(newValue, oldValue, scope) {
+        scope.counter++;
+        scope.$evalAsync(function(scope) {
+          scope.asyncEvaled = true;
+        });
+        console.log("Evaled inside listener: "+scope.asyncEvaled);}
+      );
+
+      scope.aValue = "test";
+      scope.$digest();
+      console.log("Evaled after digest: "+scope.asyncEvaled);
+    },
+    exception: function(){
+      var scope = new Scope();
+      scope.aValue = "abc";
+      scope.counter = 0;
+
+      scope.$watch(function() {
+        throw "Watch fail";
+      });
+      scope.$watch(
+        function(scope) {
+          scope.$evalAsync(function(scope) {
+            throw "async fail";
+          });
+          return scope.aValue;
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++;
+        }
+      );
+
+      scope.$digest();
+      console.assert(scope.counter === 1);
+    },
+    destroyWatch: function(){
+      var scope = new Scope();
+      scope.aValue = "www";
+      scope.counter = 0;
+
+      var removeWatch = scope.$watch(
+        function(scope) {
+          return scope.aValue;
+        },
+        function(newValue, oldValue, scope) {
+          scope.counter++;
+        }
+      );
+
+      scope.$digest();
+      console.assert(scope.counter === 1);
+
+      scope.aValue = 'cccc';
+      scope.$digest();
+      console.assert(scope.counter === 2);
+
+      removeWatch();
+      scope.aValue = 'vvv';
+      scope.$digest();
+      console.assert(scope.counter === 2);
+    }
+}
+
+sampleFunctions.scope();
+sampleFunctions.watch();
+sampleFunctions.apply();
